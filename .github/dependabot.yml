@@ -1,0 +1,6 @@
+# Copied from linkclean design §11.5 (gitsubmodule entry only). No cooldown key and no
+# open-pull-requests-limit, on purpose.
+version: 2
+updates:
+  - {package-ecosystem: gitsubmodule, directory: "/", schedule: {interval: weekly, day: monday},
+     labels: [rules-update]}

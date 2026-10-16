@@ -1,0 +1,25 @@
+# Pushover + durable issue for routine alerts (linkclean design §11.5, Q22).
+name: rules-alert
+on:
+  workflow_dispatch:
+    inputs:
+      title: {required: true, type: string}
+      body:  {required: true, type: string}
+permissions: {issues: write}
+jobs:
+  alert:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: pushover
+        continue-on-error: true
+        env: {PO_USER: "${{ secrets.PUSHOVER_USER_KEY }}", PO_TOKEN: "${{ secrets.PUSHOVER_APP_TOKEN }}", TITLE: "${{ inputs.title }}", BODY: "${{ inputs.body }}"}
+        run: |
+          r=$(curl -sS --form-string "token=$PO_TOKEN" --form-string "user=$PO_USER" \
+                --form-string "title=linkclean: $TITLE" --form-string "message=${BODY:0:1000}" \
+                https://api.pushover.net/1/messages.json)
+          echo "$r" | jq -e '.status == 1 and (.errors | not)' >/dev/null && ! grep -qi 'no active devices' <<<"$r"
+      - env: {GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}", TITLE: "${{ inputs.title }}", BODY: "${{ inputs.body }}"}
+        run: |
+          n=$(gh issue list --label rules-alert --state open --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "@sadbox $TITLE"$'\n\n'"$BODY"
+          else gh issue create --label rules-alert --title "$TITLE" --body "@sadbox"$'\n\n'"$BODY"; fi

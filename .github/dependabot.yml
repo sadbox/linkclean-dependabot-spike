@@ -4,4 +4,4 @@ version: 2
 updates:
   - {package-ecosystem: gitsubmodule, directory: "/", schedule: {interval: weekly, day: monday},
      labels: [rules-update]}
-# Spike run trigger 2 (edits to this file make Dependabot re-run).
+# Spike run trigger 3 (edits to this file make Dependabot re-run).
